@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Hyderabad Times</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Georgia&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            margin: 0;
+            background: #e9e2d4; /* Darker, aged paper background */
+            color: #333;
+        }
+
+        .newspaper-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            background: #fdfaf2; /* Lighter page color */
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 1px solid #ccc;
+            filter: sepia(20%);
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 4px double #333;
+        }
+
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #999;
+            border-bottom: 1px solid #999;
+            padding: 0.25rem 0;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .container {
+            margin-top: 2rem;
+        }
+
+        .article {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 2rem;
+            break-inside: avoid; /* Prevent articles from breaking across columns */
+        }
+        
+        .main-article p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        .analysis-grid {
+            column-count: 2;
+            column-gap: 2rem;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        .viz {
+            width: 100%;
+            height: 400px; /* Adjusted for column layout */
+            margin: 1.5rem 0;
+            border: 1px solid #ccc;
+            background: #fff;
+            padding: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid #999;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .analysis-grid {
+                column-count: 1;
+            }
+            .main-title {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="newspaper-container">
+        <header>
+            <h1 class="main-title">The Hyderabad Times</h1>
+            <div class="sub-header">
+                <span>VOL. I, NO. 1</span>
+                <span id="currentDate"></span>
+                <span>SPECIAL MONSOON & TRAFFIC EDITION</span>
+            </div>
+        </header>
+
+        <main class="container">
+            <!-- Home Section -->
+            <section id="home" class="article main-article">
+                <h2>How Monsoon Affects Hyderabad Traffic</h2>
+                <p>
+                    Every year, Hyderabad’s bustling streets face the monsoon challenge. 
+                    From flooded junctions to long commutes, the rains bring visible changes in traffic dynamics. 
+                    Our analysis dives deep into the data: rainfall patterns, congestion levels, travel delays, and accidents. 
+                    This special edition presents a series of visual stories to understand how the city is impacted and where the greatest challenges lie.
+                </p>
+            </section>
+
+            <!-- Analysis Section -->
+            <section id="analysis" class="analysis-grid">
+                <div class="article">
+                    <h2>1. Rainfall vs Traffic Congestion</h2>
+                    <div id="rainfall-traffic" class="viz"></div>
+                </div>
+
+                <div class="article">
+                    <h2>2. Peak Hour Impact During Rain</h2>
+                    <div id="hourly-impact" class="viz"></div>
+                </div>
+
+                <div class="article">
+                    <h2>3. Rainfall Intensity vs Traffic Speeds</h2>
+                    <div id="rain-intensity" class="viz"></div>
+                </div>
+
+                <div class="article">
+                    <h2>4. Accidents During Monsoon</h2>
+                    <div id="accidents" class="viz"></div>
+                </div>
+
+                <div class="article">
+                    <h2>5. Spatial Analysis – Which Areas Suffer Most?</h2>
+                    <div id="map" class="viz"></div>
+                </div>
+
+                <div class="article">
+                    <h2>6. Travel Time Delay Estimation</h2>
+                    <div id="travel-delay" class="viz"></div>
+                </div>
+
+                <div class="article">
+                    <h2>7. Seasonal Trend Over Years</h2>
+                    <div id="seasonal-trend" class="viz"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            © The Hyderabad Times – A Data Analysis Dashboard
+        </footer>
+    </div>
+
+    <!-- JS for Visualizations -->
+    <script>
+        document.getElementById('currentDate').textContent = new Date().toDateString().toUpperCase();
+
+        var plotlyConfig = {responsive: true};
+
+        // (1) Rainfall vs Traffic
+        var trace1 = {x:["Jun","Jul","Aug","Sep"], y:[120,320,280,150], type:'bar', name:'Rainfall (mm)', marker:{color:'rgba(0,123,255,0.6)'}};
+        var trace2 = {x:["Jun","Jul","Aug","Sep"], y:[32,20,22,28], type:'scatter', name:'Traffic Speed (km/h)', yaxis:'y2', mode:'lines+markers', line:{color:'red'}};
+        var layout1 = {title:'Rainfall vs Traffic Speed', font: { family: 'Georgia, serif'}, yaxis:{title:'Rainfall (mm)'}, yaxis2:{title:'Speed (km/h)', overlaying:'y', side:'right'}, legend: {x: 0.1, y: 1.15, orientation: "h"}};
+        Plotly.newPlot('rainfall-traffic', [trace1, trace2], layout1, plotlyConfig);
+
+        // (2) Peak Hour Heatmap
+        var data2 = [{z:[[45,40,35,30,25,20,18],[50,48,40,35,28,22,20]], x:["6AM","9AM","12PM","3PM","6PM","9PM","12AM"], y:["Dry Days","Rainy Days"], type:'heatmap', colorscale:'Blues'}];
+        Plotly.newPlot('hourly-impact', data2, {title:'Hourly Traffic Speed: Dry vs Rainy Days', font: { family: 'Georgia, serif'}}, plotlyConfig);
+
+        // (3) Rain Intensity
+        var t1 = {y:[35,33,32,30], type:'box', name:'Light Rain'};
+        var t2 = {y:[28,25,23,22], type:'box', name:'Moderate Rain'};
+        var t3 = {y:[20,18,15,12], type:'box', name:'Heavy Rain'};
+        Plotly.newPlot('rain-intensity', [t1,t2,t3], {title:'Traffic Speed by Rainfall Intensity', font: { family: 'Georgia, serif'}}, plotlyConfig);
+
+        // (4) Accidents
+        var a1 = {x:["Jun","Jul","Aug","Sep"], y:[120,150,170,140], name:'Minor', type:'bar'};
+        var a2 = {x:["Jun","Jul","Aug","Sep"], y:[40,60,75,50], name:'Severe', type:'bar'};
+        var a3 = {x:["Jun","Jul","Aug","Sep"], y:[10,15,20,18], name:'Fatal', type:'bar'};
+        Plotly.newPlot('accidents', [a1,a2,a3], {barmode:'stack', title:'Accidents by Severity During Monsoon', font: { family: 'Georgia, serif'}}, plotlyConfig);
+
+        // (5) Spatial Map
+        var map = L.map('map').setView([17.385, 78.4867], 11);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map);
+        L.circle([17.44, 78.38], {radius:2000, color:'red'}).bindPopup("Hitec City – High Congestion").addTo(map);
+        L.circle([17.38, 78.48], {radius:2000, color:'orange'}).bindPopup("Old City – Moderate").addTo(map);
+
+        // (6) Travel Delay Gauge
+        var g = [{type:"indicator",mode:"gauge+number",value:40,title:{ text:"Average Delay (%)", font: { family: 'Georgia, serif'}},gauge:{axis:{range:[0,100]},bar:{color:"darkred"}}}];
+        Plotly.newPlot('travel-delay', g, {}, plotlyConfig);
+
+        // (7) Seasonal Trend
+        var s1 = {x:[2018,2019,2020,2021,2022,2023], y:[28,27,25,22,20,19], mode:'lines+markers', name:'Traffic Speed'};
+        var s2 = {x:[2018,2019,2020,2021,2022,2023], y:[800,900,1000,1200,1400,1600], mode:'lines+markers', name:'Rainfall (mm)', yaxis:'y2'};
+        var layout7 = {title:'Seasonal Trend (2018–2023)', font: { family: 'Georgia, serif'}, yaxis:{title:'Traffic Speed (km/h)'}, yaxis2:{title:'Rainfall (mm)', overlaying:'y', side:'right'}, legend: {x: 0.1, y: 1.15, orientation: "h"}};
+        Plotly.newPlot('seasonal-trend', [s1,s2], layout7, plotlyConfig);
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complex Hyderabad Maze Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Georgia&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #e9e2d4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        .main-wrapper {
+            position: relative; /* Needed for absolute positioning of the speech bubble */
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+        }
+
+        .game-container {
+            background-color: #fdfaf2;
+            padding: 2rem;
+            border: 2px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-top: 0;
+        }
+
+        #mazeCanvas {
+            border: 2px solid #333;
+            display: block;
+            margin: 1rem auto;
+            background-color: #006400; /* Dark green for grass */
+        }
+
+        #resetButton {
+            padding: 10px 20px;
+            font-family: 'Georgia', serif;
+            font-size: 1rem;
+            background: #333;
+            color: #fff;
+            border: 1px solid #000;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        #resetButton:hover {
+            background: #555;
+        }
+
+        #speech-bubble {
+            display: none; /* Initially hidden */
+            position: absolute;
+            background: white;
+            border: 2px solid black;
+            border-radius: 10px;
+            padding: 10px;
+            max-width: 150px;
+            font-size: 0.9rem;
+            font-style: italic;
+            z-index: 10;
+            transform: translate(-50%, -100%); /* Center above the target */
+            transition: opacity 0.3s;
+        }
+
+        #speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -12px; /* Position the tail */
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 12px 12px 0;
+            border-style: solid;
+            border-color: black transparent transparent transparent;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="game-container">
+            <h2>Hyderabad Roadblock Challenge</h2>
+            <p>Use arrow keys to drive the car (🚗) to the destination (🏁). Stay on the road!</p>
+            <canvas id="mazeCanvas" width="600" height="400"></canvas>
+            <button id="resetButton">Reset Game</button>
+        </div>
+        <div id="speech-bubble"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mazeCanvas');
+        const ctx = canvas.getContext('2d');
+        const resetButton = document.getElementById('resetButton');
+        const speechBubble = document.getElementById('speech-bubble');
+
+        const TILE_SIZE = 20;
+        const COLS = canvas.width / TILE_SIZE;
+        const ROWS = canvas.height / TILE_SIZE;
+
+        const mazeLayout = [
+            "S0010000010000000001000001000D",
+            "110101110101110111010111011111",
+            "000100222000010001000100000001",
+            "011101111111010111110101111101",
+            "010000000100020001222100010001",
+            "010111110101111101111101110111",
+            "000001000100010001000000010001",
+            "111101011101110111011111010111",
+            "100001000001222100010001000001",
+            "101111111101111101110101111001",
+            "000122200100000001000100022201",
+            "011101110101111101011111111101",
+            "010000010000010000000100010001",
+            "010111011111010111110101110111",
+            "000001000100012221000100010001",
+            "111101011101110111011101110111",
+            "100001000000000100010000010001",
+            "101111110111112101110111110101",
+            "000000000100000100000001000001",
+            "111111111111111111111111111111"
+        ];
+        
+        const jokes = [
+            "Trying to swim to work? The 'IT corridor' is that way!",
+            "Congratulations! You've found Hyderabad's newest swimming pool.",
+            "That's not a road, it's a 'seasonal water feature'.",
+            "You seem to be mistaken. This is a canal, not a commute.",
+            "Don't worry, the potholes are breaking your fall.",
+            "This must be the 'express lane' everyone talks about.",
+            "Who needs a car wash when you have the monsoon?"
+        ];
+        let jokeTimeout;
+
+        let player, start, destination, gameWon;
+
+        function getTile(col, row) {
+            if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+                return mazeLayout[row][col];
+            }
+            return '1';
+        }
+
+        function initGame() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (getTile(c, r) === 'S') {
+                        start = { col: c, row: r };
+                        player = { ...start };
+                    } else if (getTile(c, r) === 'D') {
+                        destination = { col: c, row: r };
+                    }
+                }
+            }
+            gameWon = false;
+            speechBubble.style.display = 'none';
+            drawGame();
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#006400'; // Dark Green for base
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const tile = getTile(c, r);
+                    
+                    if (tile === '1') { // Divider
+                         ctx.fillStyle = '#A9A9A9'; // Dark Gray
+                         ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                         ctx.strokeStyle = '#696969';
+                         ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else if (tile === '0' || tile === 'S' || tile === 'D') { // Road
+                        ctx.fillStyle = '#444'; // Asphalt
+                        ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        
+                        // Dashed lines
+                        ctx.strokeStyle = '#FFD700'; // Yellow
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.setLineDash([5, 5]);
+                        // Check for horizontal road
+                        if (getTile(c-1, r) !== '1' && getTile(c+1,r) !== '1') {
+                            ctx.moveTo(c * TILE_SIZE, r * TILE_SIZE + TILE_SIZE / 2);
+                            ctx.lineTo((c + 1) * TILE_SIZE, r * TILE_SIZE + TILE_SIZE / 2);
+                        }
+                        // Check for vertical road
+                         if (getTile(c, r-1) !== '1' && getTile(c,r+1) !== '1') {
+                            ctx.moveTo(c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE);
+                            ctx.lineTo(c * TILE_SIZE + TILE_SIZE / 2, (r + 1) * TILE_SIZE);
+                        }
+                        ctx.stroke();
+                        ctx.setLineDash([]); // Reset for other strokes
+                    } else if (tile === '2') { // Water
+                        ctx.fillStyle = '#4682B4'; // SteelBlue
+                        ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+            }
+            
+            ctx.font = `${TILE_SIZE * 1.4}px sans-serif`;
+            ctx.textAlign = 'left';
+   			ctx.textBaseline = 'top';
+
+            ctx.fillText('🏠', start.col * TILE_SIZE, start.row * TILE_SIZE);
+            ctx.fillText('🏁', destination.col * TILE_SIZE, destination.row * TILE_SIZE);
+            ctx.fillText('🚗', player.col * TILE_SIZE, player.row * TILE_SIZE);
+            
+            if (gameWon) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.font = '40px "Playfair Display"';
+                ctx.textAlign = 'center';
+                ctx.fillText('You Made It Home!', canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function showJoke() {
+            clearTimeout(jokeTimeout);
+            const randomIndex = Math.floor(Math.random() * jokes.length);
+            speechBubble.innerText = jokes[randomIndex];
+
+            const canvasRect = canvas.getBoundingClientRect();
+            const bubbleTop = canvasRect.top + (player.row * TILE_SIZE) - 10;
+            const bubbleLeft = canvasRect.left + (player.col * TILE_SIZE) + (TILE_SIZE / 2);
+
+            speechBubble.style.top = `${bubbleTop}px`;
+            speechBubble.style.left = `${bubbleLeft}px`;
+            speechBubble.style.display = 'block';
+
+            jokeTimeout = setTimeout(() => {
+                speechBubble.style.display = 'none';
+            }, 3000); // Joke disappears after 3 seconds
+        }
+
+        function handleKeyPress(e) {
+            if (gameWon) return;
+
+            let nextCol = player.col;
+            let nextRow = player.row;
+
+            switch (e.key) {
+                case 'ArrowUp': nextRow--; break;
+                case 'ArrowDown': nextRow++; break;
+                case 'ArrowLeft': nextCol--; break;
+                case 'ArrowRight': nextCol++; break;
+                default: return;
+            }
+            e.preventDefault();
+
+            const targetTile = getTile(nextCol, nextRow);
+            if (targetTile === '2') {
+                showJoke();
+                return;
+            }
+
+            if (targetTile !== '1') {
+                player.col = nextCol;
+                player.row = nextRow;
+            }
+
+            if (player.col === destination.col && player.row === destination.row) {
+                gameWon = true;
+            }
+
+            drawGame();
+        }
+
+        window.addEventListener('keydown', handleKeyPress);
+        resetButton.addEventListener('click', initGame);
+
+        initGame();
+    </script>
+</body>
+</html>
+

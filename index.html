@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyderabad Monsoon Times</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"  crossorigin="" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="extracted_traffic_data.js"></script>
+    <style>
+        body {
+            background-color: #f3eade; /* A nice off-white, parchment color */
+            font-family: 'Roboto', sans-serif;
+        }
+        .newspaper-title {
+            font-family: 'Playfair Display', serif;
+            border-bottom: 4px double #333;
+            border-top: 4px double #333;
+        }
+        .newspaper-article {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .newspaper-article:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        .section-headline {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            border-bottom: 2px solid #555;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .read-more {
+            color: #005a9c;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        .read-more:hover {
+            text-decoration: underline;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background-color: #f3eade;
+            margin: 5% auto;
+            padding: 30px;
+            border: 4px double #333;
+            width: 80%;
+            max-width: 900px;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto bg-[#fdfaf2] p-6 shadow-2xl border-2 border-[#d3c9b5]">
+
+        <!-- Header -->
+        <header class="text-center py-6">
+            <h1 class="text-5xl md:text-7xl font-bold newspaper-title py-4">The Hyderabad Monsoon Times</h1>
+            <p class="text-gray-600 text-lg mt-2">Your Trusted Source for City Traffic & Weather Analysis</p>
+            <div class="flex justify-between text-gray-500 mt-2 border-t border-b border-gray-400 py-1 text-sm">
+                <span>VOL. I, No. 1</span>
+                <span>HYDERABAD, INDIA</span>
+                <span id="currentDate"></span>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+
+            <!-- Left Column (Main Content Flow) -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Main Story: Interactive Map -->
+                <section class="newspaper-article">
+                    <h2 class="section-headline text-3xl">Real-Time Hyderabad Traffic Flow Map</h2>
+                    <p class="text-gray-700 mb-4">Live traffic visualization showing current speed conditions across Hyderabad's major routes. Features real street coordinates, speed measurements, and color-coded traffic flow data from 30+ monitoring points across the city, exactly as captured from live traffic systems.</p>
+                    <iframe src="hyderabad_traffic_flow_map (2).html"
+                            width="100%"
+                            height="500"
+                            style="border: 2px solid #ddd; border-radius: 8px;"
+                            title="Hyderabad Traffic Flow Map">
+                    </iframe>
+                    <a href="#" class="read-more" onclick="openModal('mapModal')">Read the Full Story & Analysis →</a>
+                </section>
+
+                <!-- Graphs and Games Wrapper -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Graphs and Plots -->
+                    <section class="newspaper-article">
+                        <h2 class="section-headline text-3xl">Numbers Don't Lie: A Decade of Data</h2>
+                        <p class="text-gray-700 mb-4">Visualizing the correlation between rainfall intensity and traffic index over the past ten years in Hyderabad.</p>
+                        <div class="h-64 border p-2 rounded-md flex items-center justify-center bg-white">
+                            <img src="img2.png"
+                                 alt="Rainfall vs Traffic Analysis Preview"
+                                 class="max-h-full w-auto object-contain rounded shadow-md">
+                        </div>
+                        <a href="Data1.html" class="read-more">Explore All Visualizations →</a>
+                    </section>
+                    <!-- Games Section -->
+                    <section class="newspaper-article">
+                        <h2 class="section-headline text-3xl">The Sunday Comics & Puzzles</h2>
+                        <p class="text-gray-700 mb-4">Take a break with our traffic-themed game. Can you navigate the city?</p>
+                        <div class="flex justify-center mt-4">
+                            <div class="bg-blue-100 border-2 border-blue-300 p-4 rounded-md text-center max-w-sm">
+                                <h4 class="font-bold text-lg">Hyderabad Maze</h4>
+                                <p class="text-sm">Avoid the flooded roads and get to your destination!</p>
+                                <a href="Maiz.html" class="mt-2 inline-block bg-blue-800 text-white px-4 py-1 rounded-md hover:bg-blue-600">Play Now</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Photo Strip Section -->
+                <section class="newspaper-article">
+                    <h2 class="section-headline text-3xl">📸 Monsoon Traffic in Hyderabad</h2>
+                    <p class="text-gray-700 mb-6">Every year, the arrival of the monsoon transforms Hyderabad’s streets into a bustling yet chaotic scene. Heavy rains bring traffic jams, waterlogging, and long commutes, but also reveal the resilience of the city’s people. Below are snapshots that capture the spirit of Hyderabad during the rains.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <figure class="border-4 border-gray-400 rounded-lg overflow-hidden shadow-md bg-white"><img src="imgmonsoon1.jpg" alt="Flooded road" class="w-full h-64 object-cover"><figcaption class="text-center text-sm text-gray-700 p-2 bg-gray-100">🚧 Waterlogging at Begumpet after a downpour.</figcaption></figure>
+                        <figure class="border-4 border-gray-400 rounded-lg overflow-hidden shadow-md bg-white"><img src="imgmonsoon2.jpg" alt="Traffic jam" class="w-full h-64 object-cover"><figcaption class="text-center text-sm text-gray-700 p-2 bg-gray-100">🚦 Rush hour traffic slowed to a crawl on Necklace Road.</figcaption></figure>
+                        <figure class="border-4 border-gray-400 rounded-lg overflow-hidden shadow-md bg-white"><img src="imgmonsoon3.jpg" alt="Commuters walking" class="w-full h-64 object-cover"><figcaption class="text-center text-sm text-gray-700 p-2 bg-gray-100">🚶 Commuters wading through flooded streets in Old City.</figcaption></figure>
+                        <figure class="border-4 border-gray-400 rounded-lg overflow-hidden shadow-md bg-white"><img src="imgmonsoon4.jpg" alt="IT corridor" class="w-full h-64 object-cover"><figcaption class="text-center text-sm text-gray-700 p-2 bg-gray-100">💼 IT corridor near Hitec City during evening showers.</figcaption></figure>
+                        <figure class="border-4 border-gray-400 rounded-lg overflow-hidden shadow-md bg-white"><img src="imgmonsooon5.jpg" alt="Bike riders" class="w-full h-64 object-cover"><figcaption class="text-center text-sm text-gray-700 p-2 bg-gray-100">🛵 Bikers navigating rain with makeshift raincoats.</figcaption></figure>
+                        <figure class="border-4 border-gray-400 rounded-lg overflow-hidden shadow-md bg-white"><img src="imgmonsoon6.jpg" alt="Street vendors" class="w-full h-64 object-cover"><figcaption class="text-center text-sm text-gray-700 p-2 bg-gray-100">🍲 Street vendors serving hot snacks near Charminar.</figcaption></figure>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column (Sidebar) -->
+            <aside class="lg:col-span-1 space-y-6">
+                <!-- Zone Traffic Impact Spectrum -->
+                <div class="newspaper-article">
+                    <h3 class="section-headline text-xl">Traffic Surge: Zone-wise Analysis</h3>
+                    <p class="text-sm text-gray-600 mb-4">Increase in traffic congestion during monsoon (2021–2024). Click a zone for details.</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <button class="bg-green-500 text-white text-sm p-2 rounded-md hover:opacity-80 w-full" onclick="openModal('itCorridorModal')">IT Corridor Zone – 400–500%</button>
+                        <button class="bg-yellow-400 text-black text-sm p-2 rounded-md hover:opacity-80 w-full" onclick="openModal('centralModal')">Central Zone – 200–300%</button>
+                        <button class="bg-orange-500 text-white text-sm p-2 rounded-md hover:opacity-80 w-full" onclick="openModal('oldCityModal')">Old City Zone – 150–250%</button>
+                        <button class="bg-blue-500 text-white text-sm p-2 rounded-md hover:opacity-80 w-full" onclick="openModal('secunderabadModal')">Secunderabad Zone – 100–200%</button>
+                        <button class="bg-red-600 text-white text-sm p-2 rounded-md hover:opacity-80 w-full" onclick="openModal('westernModal')">Western Zone – 150–300%</button>
+                    </div>
+                </div>
+                
+                <!-- Monsoon Mirth -->
+                <div class="newspaper-article">
+                    <h3 class="section-headline text-xl">Monsoon Mirth</h3>
+                    <p class="text-gray-600 italic text-sm mb-2">A lighter take on the city's woes.</p>
+                    <figure>
+                        <img src="WhatsApp Image 2025-09-19 at 22.50.55_7a2777c0.jpg" alt="Hyderabad monsoon traffic comic" class="w-full rounded border-2 border-gray-300">
+                        <figcaption class="text-center text-xs text-gray-600 mt-1">The eternal question for a Hyderabad commuter.</figcaption>
+                    </figure>
+                </div>
+
+                <!-- Then & Now: A City's Traffic Evolution -->
+                <div class="newspaper-article">
+                    <h3 class="section-headline text-xl">Then & Now: A City's Traffic Evolution</h3>
+                     <p class="text-gray-600 italic text-sm mb-3">From quiet roads to bustling arteries, the city's relationship with traffic has dramatically changed.</p>
+                     <ul class="space-y-3 text-sm text-gray-800">
+                         <li class="flex items-start"><i class="fas fa-road-bridge mt-1 mr-2 text-gray-500"></i><span><strong>The ORR Effect:</strong> Completed in 2018, the Outer Ring Road diverted heavy traffic from the core, but created new monsoon choke-points at its entry/exit junctions.</span></li>
+                         <li class="flex items-start"><i class="fas fa-building mt-1 mr-2 text-gray-500"></i><span><strong>Rise of IT Corridor:</strong> In the early 2000s, Hitec City had minimal traffic. Today, its concentrated workforce makes it the city's most congested zone during a downpour.</span></li>
+                         <li class="flex items-start"><i class="fas fa-train-subway mt-1 mr-2 text-gray-500"></i><span><strong>Metro as Monsoon Hope:</strong> Since 2017, the Metro has become crucial, with ridership spiking by up to 30% on days with heavy rainfall as commuters ditch the roads.</span></li>
+                         <li class="flex items-start"><i class="fas fa-house-flood-water mt-1 mr-2 text-gray-500"></i><span><strong>Old City's Drainage:</strong> Historically, the Nizam-era drainage in the Old City was highly effective. Modern construction has since strained this legacy infrastructure, leading to frequent waterlogging.</span></li>
+                     </ul>
+                </div>
+
+                <!-- From The Archives (Updated) -->
+                <div class="newspaper-article">
+                    <h3 class="section-headline text-xl">From The Archives</h3>
+                    <p class="text-gray-600 italic text-sm mb-2">“Reliving past downpours & traffic drama”</p>
+                    <div class="overflow-y-auto max-h-48 pr-2">
+                        <ul class="space-y-3 list-disc list-inside text-gray-800 text-sm">
+                            <li><a href="https://www.thenewsminute.com/telangana/heavy-rains-lash-hyderabad-roads-waterlogged-traffic-disrupted-166417" target="_blank" class="hover:underline">Heavy rains lash Hyderabad roads: waterlogged, traffic disrupted – The News Minute</a></li>
+                            <li><a href="https://www.thehindu.com/news/cities/Hyderabad/monsoon-set-to-worsen-traffic-woes/article18453105.ece" target="_blank" class="hover:underline">Monsoon set to worsen traffic woes – The Hindu</a></li>
+                            <li><a href="https://timesofindia.indiatimes.com/city/hyderabad/traffic-management-in-hyderabad-during-monsoon/articleshow/110778349.cms" target="_blank" class="hover:underline">Traffic management in Hyderabad during monsoon – Times of India</a></li>
+                            <li><a href="https://www.thehindu.com/news/cities/Hyderabad/flooded-flyovers-choked-roads-traffic-police-change-gears-on-monsoon-strategy/article69831927.ece" target="_blank" class="hover:underline">Flooded flyovers, choked roads: Traffic police change gears on monsoon strategy – The Hindu</a></li>
+                            <li><a href="https://timesofindia.indiatimes.com/city/hyderabad/nightmare-on-hyderabad-streets-as-city-sees-heaviest-downpour-in-five-years/articleshow/123983667.cms" target="_blank" class="hover:underline">Nightmare on Hyderabad streets as city sees heaviest downpour in five years – Times of India</a></li>
+                            <li><a href="https://www.thenewsminute.com/telangana/who-a-hyderabads-waterlogged-roads-and-traffic-woes-during-monsoon-104331" target="_blank" class="hover:underline">Who? A Hyderabad’s waterlogged roads and traffic woes during monsoon – The News Minute</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+    <!-- Modals for Detailed Views -->
+    <div id="mapModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('mapModal')">&times;</span><h2 class="section-headline text-4xl">In-Depth Analysis: Mapping Monsoon Traffic</h2><p>This is where the detailed story about the interactive map would go. We could include more text, images, and specific data points about the most affected areas like Hitech City, Begumpet, and the Old City. We can discuss the methodology behind the data collection and the key takeaways from the visualization.</p></div></div>
+    <div id="pyramidModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('pyramidModal')">&times;</span><h2 class="section-headline text-4xl">Pyramid Statistics</h2><p>Here you can add input fields to let users fill in their own statistics for each level of the pyramid, or display detailed pre-existing data.</p><div class="mt-4 space-y-2"><div><label class="font-bold">Heavy Rainfall:</label> <input type="text" class="border p-1 rounded-md w-full" value="Avg. 150mm during peak monsoon"></div><div><label class="font-bold">Water Logging:</label> <input type="text" class="border p-1 rounded-md w-full" value="Affects 45% of major junctions"></div><div><label class="font-bold">Vehicle Breakdowns:</label> <input type="text" class="border p-1 rounded-md w-full" value="Increases by 200% on rainy days"></div><div><label class="font-bold">Poor Drainage:</label> <input type="text" class="border p-1 rounded-md w-full" value="55% of storm drains are clogged"></div></div></div></div>
+    <div id="graphsModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('graphsModal')">&times;</span><h2 class="section-headline text-4xl">Data Visualizations</h2><p>This space will house a collection of different charts: bar charts for monthly comparisons, box plots to show data distribution, and scatter plots to identify correlations. Each chart would come with a brief explanation of what it represents.</p></div></div>
+    <div id="mazeGameModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('mazeGameModal')">&times;</span><h2 class="section-headline text-4xl">Hyderabad Maze Challenge</h2><p>A simple game canvas will appear here. The goal is to navigate a car from a starting point (e.g., Charminar) to a destination (e.g., Golconda Fort) on a simplified map of Hyderabad, avoiding red 'flooded' squares.</p><canvas id="mazeCanvas" class="bg-white border-2 border-gray-400 mx-auto block"></canvas></div></div>
+    <div id="itCorridorModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('itCorridorModal')">&times;</span><h2 class="section-headline text-3xl">IT Corridor Zone (Highest Impact)</h2><p><b>Traffic Increase:</b> 400–500% during heavy monsoon</p><p>The IT Corridor (Gachibowli, Madhapur, Hitech City, Kondapur) faces the most severe traffic disruptions...</p><ul class="list-disc pl-6 mt-2"><li><b>Critical Waterlogging Points:</b> Shilparamam Bus Stop, Kothaguda, Biodiversity Junction</li><li><b>Most Affected Routes:</b> JNTU to IKEA via Biodiversity, Shaikpet to Gachibowli</li></ul></div></div>
+    <div id="centralModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('centralModal')">&times;</span><h2 class="section-headline text-3xl">Central Zone (High Impact)</h2><p><b>Traffic Increase:</b> 200–300% during monsoon</p><p>Areas like Khairatabad, Somajiguda, Punjagutta, and Ameerpet experience significant slowdowns...</p></div></div>
+    <div id="oldCityModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('oldCityModal')">&times;</span><h2 class="section-headline text-3xl">Old City Zone (Moderate Impact)</h2><p><b>Traffic Increase:</b> 150–250% during monsoon</p><p>Despite narrow streets, the Old City shows resilience, though areas like Nampally and Charminar see knee-deep water.</p></div></div>
+    <div id="secunderabadModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('secunderabadModal')">&times;</span><h2 class="section-headline text-3xl">Secunderabad Zone (Moderate Impact)</h2><p><b>Traffic Increase:</b> 100–200% during monsoon</p><p>Areas like Alwal and Bollaram report sudden inundation during rains, with gridlocks on the Secunderabad–Balanagar route.</p></div></div>
+    <div id="westernModal" class="modal"><div class="modal-content"><span class="close-button" onclick="closeModal('westernModal')">&times;</span><h2 class="section-headline text-3xl">Western Zone (High Impact)</h2><p><b>Traffic Increase:</b> 150–300% during monsoon</p><p>Kukatpally, JNTU, and Miyapur areas face flooding at underpasses, causing congestion toward Lingampalli and Nallagandla.</p></div></div>
+
+    <script>
+        document.getElementById('currentDate').textContent = new Date().toDateString().toUpperCase();
+        function openModal(modalId) { document.getElementById(modalId).style.display = "block"; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let i = 0; i < modals.length; i++) {
+                if (event.target == modals[i]) {
+                    modals[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
