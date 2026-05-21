@@ -99,14 +99,6 @@ Introduce regression models for predicting average traffic speed directly, or ti
 
 ---
 
-## Example Visuals
-
-<img src="WhatsApp%20Image%202025-09-19%20at%2022.50.55_7a2777c0.jpg" width="410"/>
-
-*Sample: Spatial map and analysis visuals from the dashboard.*
-
----
-
 ## Project Structure
 
 - **Eml_Project.ipynb**: All code for loading data, cleaning, EDA, model building, and maps.
